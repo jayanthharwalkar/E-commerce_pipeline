@@ -18,28 +18,8 @@ FastAPI — exposes analytics endpoints
 Scripts — populate SQS with sample order events
 
 📂 Project Structure
-'''
-E-commerce_pipeline/
-│
-├── docker-compose.yml
-├── web/                 # FastAPI application
-│   ├── main.py
-│   ├── api.py
-│   ├── redis_client.py
-│   └── Dockerfile
-│
-├── worker/              # SQS-consuming worker
-│   ├── consumer.py
-│   ├── sqs_services.py
-│   ├── redis_services.py
-│   ├── processing.py
-│   └── Dockerfile
-│
-├── scripts/
-│   └── populate_sqs.py  # Script to send sample orders to SQS
-│
-└── README.md
-'''
+<img width="598" height="510" alt="image" src="https://github.com/user-attachments/assets/b4f18242-d649-447e-a80d-5461cfd96332" />
+
 🛠 How It Works
 1. Queue is created and orders arrive in SQS (via scripts/send.py and scipts/bulk_send.py)
 
@@ -99,6 +79,7 @@ curl http://localhost:8000/users/{user_id}/stats
 curl http://localhost:8000/stats/global
 curl http://localhost:8000/stats/top/5
 curl "http://localhost:8000/stats/monthly?start={yyyy-mm}&end={yyyy-mm}"
+
 
 
 
