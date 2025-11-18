@@ -1,67 +1,89 @@
 📦 E-Commerce Order Processing Pipeline
 
-A lightweight data engineering pipeline that simulates an e-commerce order ingestion system using LocalStack (SQS), Redis, FastAPI, and a background SQS consumer.
+A lightweight data engineering pipeline that simulates an end-to-end e-commerce order ingestion and analytics system using LocalStack (SQS), Redis, FastAPI, and a background SQS consumer.
 
 🚀 Architecture
-Client → SQS Queue → Worker → Redis → FastAPI (stats API)
+Client → SQS Queue → Worker → Redis → FastAPI (Analytics API)
 
 Components
 
-SQS (LocalStack) — queue for incoming orders
+SQS (LocalStack) — queue for incoming order events
 
-Worker — validates orders and updates aggregates
+Worker — validates orders, fixes order_value mismatches, updates aggregates
 
-Redis — stores user + global metrics
+Redis — stores user-level & global metrics
 
 FastAPI — exposes analytics endpoints
 
-Scripts — populate SQS with sample order events
+Scripts — generate and send sample orders
 
 📂 Project Structure
-
-
-<img width="598" height="510" alt="image" src="https://github.com/user-attachments/assets/b4f18242-d649-447e-a80d-5461cfd96332" />
+E-commerce_pipeline/
+├── docker-compose.yml
+├── web/                  # FastAPI application
+│   ├── main.py
+│   ├── api.py
+│   ├── redis_client.py
+│   └── Dockerfile
+├── worker/               # SQS-consuming worker
+│   ├── consumer.py
+│   ├── sqs_services.py
+│   ├── redis_services.py
+│   └── processing.py
+├── scripts/
+│   ├── send_order.py
+│   ├── bulk_order.py
+│   └── populate_sqs.py
+└── README.md
 
 🛠 How It Works
-1. Queue is created and orders arrive in SQS (via scripts/send.py and scipts/bulk_send.py)
+1️⃣ Queue is created and orders arrive in SQS
 
-Each message includes:
+(via scripts/send_order.py and scripts/bulk_order.py)
+
+Each incoming message contains:
 
 order_id
 
 user_id
 
-timestamp
+order_timestamp
 
 items (quantity, price_per_unit)
 
-2. Worker consumes messages
+2️⃣ Worker consumes and validates messages
 
-Validates required fields
+The worker performs:
 
-Recalculates order_value (items * price) and logs mismatches
+✔ Validates required fields
 
-Updates Redis user stats:
+✔ Recalculates order_value = sum(quantity × price_per_unit)
+
+✔ Logs mismatch if provided order_value is wrong
+
+✔ Updates user-level stats in Redis:
 
 order_count
 
 total_spend
 
-Updates global stats:
+✔ Updates global stats:
 
 total_orders
 
 total_revenue
 
-3. FastAPI exposes stats
+3️⃣ FastAPI exposes analytics
 
-/health
-/metrics	
-/users/{id}/stats	
-/stats/global	
-/stats/top/{n}
-/stats/monthly
+Available endpoints:
 
+Endpoint	Description
+/health	Service health check
+/metrics	Global system metrics
+/users/{id}/stats	Stats for a single user
+/stats/global	Global aggregated metrics
+/stats/top/{n}	Top N users by spend
+/stats/monthly?start=YYYY-MM&end=YYYY-MM	Monthly range stats
 ▶️ Running Locally
 1. Clone repository
 git clone https://github.com/jayanthharwalkar/E-commerce_pipeline
@@ -70,20 +92,25 @@ cd E-commerce_pipeline
 2. Start services
 docker-compose up --build
 
+
+This starts:
+
+LocalStack (SQS)
+
+Redis
+
+Worker service
+
+FastAPI server
+
 3. Send sample orders
 python scripts/send_order.py
-python scripts/bulk_order.py {number of sample orders}
+python scripts/bulk_order.py 50        # example: send 50 random orders
 
-5. Test API
-curl http://localhost:8000/health <br>
-curl http://localhost:8000/metrics <br>
-curl http://localhost:8000/users/{user_id}/stats <br>
-curl http://localhost:8000/stats/global <br>
-curl http://localhost:8000/stats/top/5 <br>
-curl "http://localhost:8000/stats/monthly?start={yyyy-mm}&end={yyyy-mm}" <br>
-
-
-
-
-
-
+4. Test API endpoints
+curl http://localhost:8000/health
+curl http://localhost:8000/metrics
+curl http://localhost:8000/users/{user_id}/stats
+curl http://localhost:8000/stats/global
+curl http://localhost:8000/stats/top/5
+curl "http://localhost:8000/stats/monthly?start=2024-01&end=2024-12"
