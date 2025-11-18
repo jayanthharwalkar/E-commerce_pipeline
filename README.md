@@ -1,31 +1,35 @@
-📦 E-Commerce Order Processing Pipeline
+# 📦 **E-Commerce Order Processing Pipeline**
 
-A lightweight data engineering pipeline that simulates an end-to-end e-commerce order ingestion and analytics system using LocalStack (SQS), Redis, FastAPI, and a background SQS consumer.
+A lightweight data engineering pipeline that simulates an e-commerce order ingestion system using **LocalStack (SQS)**, **Redis**, **FastAPI**, and a background **SQS consumer**.
 
-🚀 Architecture
-Client → SQS Queue → Worker → Redis → FastAPI (Analytics API)
+---
 
-Components
+# 🚀 **Architecture**
 
-SQS (LocalStack) — queue for incoming order events
+```
+Client → SQS Queue → Worker → Redis → FastAPI (Stats API)
+```
 
-Worker — validates orders, fixes order_value mismatches, updates aggregates
+### **Components**
+- **SQS (LocalStack)** — receives incoming order events  
+- **Worker** — validates orders, recalculates `order_value`, updates aggregates  
+- **Redis** — stores global + per-user metrics  
+- **FastAPI** — exposes analytics APIs  
+- **Scripts** — utility scripts to send test events  
 
-Redis — stores user-level & global metrics
+---
 
-FastAPI — exposes analytics endpoints
+# 📂 **Project Structure**
 
-Scripts — generate and send sample orders
-
-📂 Project Structure
+```
 E-commerce_pipeline/
 ├── docker-compose.yml
-├── web/                  # FastAPI application
+├── web/
 │   ├── main.py
 │   ├── api.py
 │   ├── redis_client.py
 │   └── Dockerfile
-├── worker/               # SQS-consuming worker
+├── worker/
 │   ├── consumer.py
 │   ├── sqs_services.py
 │   ├── redis_services.py
@@ -35,82 +39,100 @@ E-commerce_pipeline/
 │   ├── bulk_order.py
 │   └── populate_sqs.py
 └── README.md
+```
 
-🛠 How It Works
-1️⃣ Queue is created and orders arrive in SQS
+---
 
-(via scripts/send_order.py and scripts/bulk_order.py)
+# 🛠 **How It Works**
 
-Each incoming message contains:
+## **1️⃣ Queue is created & orders arrive in SQS**
+(via `scripts/send_order.py` and `scripts/bulk_order.py`)
 
-order_id
+Each message contains:
 
-user_id
+- `order_id`
+- `user_id`
+- `order_timestamp`
+- `items` → `{ quantity, price_per_unit }`
 
-order_timestamp
+---
 
-items (quantity, price_per_unit)
+## **2️⃣ Worker consumes & validates messages**
 
-2️⃣ Worker consumes and validates messages
+### Worker Responsibilities:
+- Validates all required fields  
+- **Recalculates** `order_value = sum(qty × price_per_unit)`  
+- Logs mismatch if original value is wrong  
+- Updates **user-level stats**:
+  - `order_count`
+  - `total_spend`
+- Updates **global stats**:
+  - `total_orders`
+  - `total_revenue`
 
-The worker performs:
+---
 
-✔ Validates required fields
+## **3️⃣ FastAPI exposes analytics**
 
-✔ Recalculates order_value = sum(quantity × price_per_unit)
+### **Available Endpoints**
 
-✔ Logs mismatch if provided order_value is wrong
+| Endpoint | Description |
+|----------|-------------|
+| **`/health`** | Health check |
+| **`/metrics`** | Global system stats |
+| **`/users/{id}/stats`** | Stats for a single user |
+| **`/stats/global`** | Global aggregates |
+| **`/stats/top/{n}`** | Top N users by spend |
+| **`/stats/monthly?start=YYYY-MM&end=YYYY-MM`** | Monthly range analytics |
 
-✔ Updates user-level stats in Redis:
+---
 
-order_count
+# ▶️ **Running Locally**
 
-total_spend
-
-✔ Updates global stats:
-
-total_orders
-
-total_revenue
-
-3️⃣ FastAPI exposes analytics
-
-Available endpoints:
-
-Endpoint	Description
-/health	Service health check
-/metrics	Global system metrics
-/users/{id}/stats	Stats for a single user
-/stats/global	Global aggregated metrics
-/stats/top/{n}	Top N users by spend
-/stats/monthly?start=YYYY-MM&end=YYYY-MM	Monthly range stats
-▶️ Running Locally
-1. Clone repository
+## **1. Clone the repository**
+```bash
 git clone https://github.com/jayanthharwalkar/E-commerce_pipeline
 cd E-commerce_pipeline
+```
 
-2. Start services
+---
+
+## **2. Start all services**
+```bash
 docker-compose up --build
-
+```
 
 This starts:
+- LocalStack (SQS)
+- Redis
+- Worker
+- FastAPI
 
-LocalStack (SQS)
+---
 
-Redis
+## **3. Send sample orders**
 
-Worker service
-
-FastAPI server
-
-3. Send sample orders
+### Send one order:
+```bash
 python scripts/send_order.py
-python scripts/bulk_order.py 50        # example: send 50 random orders
+```
 
-4. Test API endpoints
+### Send bulk orders:
+```bash
+python scripts/bulk_order.py 50
+```
+
+---
+
+## **4. Test API endpoints**
+```bash
 curl http://localhost:8000/health
 curl http://localhost:8000/metrics
 curl http://localhost:8000/users/{user_id}/stats
 curl http://localhost:8000/stats/global
 curl http://localhost:8000/stats/top/5
 curl "http://localhost:8000/stats/monthly?start=2024-01&end=2024-12"
+```
+
+---
+
