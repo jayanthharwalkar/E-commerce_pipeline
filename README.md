@@ -18,6 +18,8 @@ FastAPI — exposes analytics endpoints
 Scripts — populate SQS with sample order events
 
 📂 Project Structure
+
+
 <img width="598" height="510" alt="image" src="https://github.com/user-attachments/assets/b4f18242-d649-447e-a80d-5461cfd96332" />
 
 🛠 How It Works
@@ -79,6 +81,7 @@ curl http://localhost:8000/users/{user_id}/stats
 curl http://localhost:8000/stats/global
 curl http://localhost:8000/stats/top/5
 curl "http://localhost:8000/stats/monthly?start={yyyy-mm}&end={yyyy-mm}"
+
 
 
 
