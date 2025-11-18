@@ -58,3 +58,16 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+
+  init-queue:
+    image: amazon/aws-cli:latest
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      aws --endpoint-url=http://localstack:4566 sqs create-queue --queue-name orders --region us-east-1 --access-key-id test --secret-access-key test ||
+      echo "Queue already exists"
+    depends_on:
+      - localstack
+    environment:
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
