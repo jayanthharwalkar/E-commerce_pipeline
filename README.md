@@ -75,12 +75,13 @@ python scripts/send_order.py
 python scripts/bulk_order.py {number of sample orders}
 
 5. Test API
-curl http://localhost:8000/health
-curl http://localhost:8000/metrics
-curl http://localhost:8000/users/{user_id}/stats
-curl http://localhost:8000/stats/global
-curl http://localhost:8000/stats/top/5
-curl "http://localhost:8000/stats/monthly?start={yyyy-mm}&end={yyyy-mm}"
+curl http://localhost:8000/health <br>
+curl http://localhost:8000/metrics <br>
+curl http://localhost:8000/users/{user_id}/stats <br>
+curl http://localhost:8000/stats/global <br>
+curl http://localhost:8000/stats/top/5 <br>
+curl "http://localhost:8000/stats/monthly?start={yyyy-mm}&end={yyyy-mm}" <br>
+
 
 
 
