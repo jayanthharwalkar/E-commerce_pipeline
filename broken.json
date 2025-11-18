@@ -1,0 +1,9 @@
+{
+  "order_id": "BROKEN123",
+  "user_id": "U9999",
+  "order_timestamp": "2024-01-01T10:00:00Z",
+  "order_value": 123.45,
+  "items": [
+    {"product_id": "X", "quantity": 2, "price_per_unit": 100.0}
+  ]
+}
