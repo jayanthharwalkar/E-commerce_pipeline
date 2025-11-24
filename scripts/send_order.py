@@ -16,7 +16,7 @@ order = {
     "order_id": "205",
     "user_id": "U1034",
     "order_timestamp": "2024-01-01T10:00:00Z",
-    "order_value": 10.0,
+    "order_value": 500.0,
     "items": [
         {"product_id": "X", "quantity": 2, "price_per_unit": 250.0},
     ],
